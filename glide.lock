@@ -1,0 +1,8 @@
+hash: b0380fc76dd736ec5453e2a9ac0fa4f25ee56dbe71a82f075abb86b835cb65d8
+updated: 2017-11-21T14:19:00.802251934-05:00
+imports:
+- name: github.com/alecthomas/kingpin
+  version: 1087e65c9441605df944fb12c33f0fe7072d18ca
+- name: github.com/bgentry/speakeasy
+  version: 4aabc24848ce5fd31929f7d1e4ea74d3709c14cd
+testImports: []
