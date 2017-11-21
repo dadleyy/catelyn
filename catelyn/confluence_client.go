@@ -18,13 +18,6 @@ type ConfluenceClient interface {
 // NewConfluenceClient returns a client implementing the client interface.
 func NewConfluenceClient(user *url.Userinfo, hostname string) (ConfluenceClient, error) {
 	logger := log.New(os.Stdout, constants.ConfluenceClientLoggerPrefix, log.LstdFlags)
-	password, _ := user.Password()
-
-	creds := confluenceCredentials{
-		username: user.Username(),
-		password: password,
-	}
-
 	api, e := url.Parse(hostname)
 
 	if e != nil {
@@ -36,7 +29,7 @@ func NewConfluenceClient(user *url.Userinfo, hostname string) (ConfluenceClient,
 	}
 
 	client := &confluenceClient{
-		credentials: creds,
+		credentials: user,
 		logger:      logger,
 		apiHome:     api,
 	}
@@ -44,19 +37,9 @@ func NewConfluenceClient(user *url.Userinfo, hostname string) (ConfluenceClient,
 	return client, nil
 }
 
-type confluenceCredentials struct {
-	username string
-	password string
-}
-
-func (c confluenceCredentials) String() string {
-	joined := []byte(fmt.Sprintf("%s:%s", c.username, c.password))
-	return base64.StdEncoding.EncodeToString(joined)
-}
-
 type confluenceClient struct {
 	logger      *log.Logger
-	credentials confluenceCredentials
+	credentials *url.Userinfo
 	apiHome     *url.URL
 }
 
@@ -95,6 +78,13 @@ func (c *confluenceClient) send(method string, url string, body io.Reader) (*htt
 		return nil, e
 	}
 
-	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", c.credentials))
+	request.Header.Set("Authorization", c.authorization())
 	return client.Do(request)
+}
+
+func (c *confluenceClient) authorization() string {
+	password, _ := c.credentials.Password()
+	joined := fmt.Sprintf("%s:%s", c.credentials.Username(), password)
+	encoded := base64.StdEncoding.EncodeToString([]byte(joined))
+	return fmt.Sprintf("Basic %s", encoded)
 }
