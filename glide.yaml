@@ -5,3 +5,5 @@ import:
 - package: github.com/alecthomas/kingpin
   version: ^2.2.5
 - package: github.com/alecthomas/units
+- package: github.com/chzyer/readline
+  version: ^1.4.0
