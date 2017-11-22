@@ -4,7 +4,6 @@ import "io"
 import "fmt"
 import "bufio"
 import "strings"
-import "io/ioutil"
 import "github.com/alecthomas/kingpin"
 
 // NewCreatePageCommand returns an implementation of the command interface used for creating confluence pages.
@@ -82,15 +81,4 @@ func (c *createPageCLI) prompt(context *kingpin.ParseContext) error {
 	}
 
 	return nil
-}
-
-func (c *createPageCLI) listFiles(dir string) func(string) []string {
-	return func(line string) []string {
-		names := make([]string, 0)
-		files, _ := ioutil.ReadDir(dir)
-		for _, f := range files {
-			names = append(names, f.Name())
-		}
-		return names
-	}
 }
