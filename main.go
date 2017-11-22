@@ -11,6 +11,7 @@ import "github.com/dadleyy/catelyn/catelyn/constants"
 type commandConfiguration struct {
 	name        string
 	description string
+	flags       uint
 }
 
 func main() {
@@ -37,11 +38,22 @@ func main() {
 		commandConfiguration{
 			name:        "search-spaces",
 			description: "Search confluence spaces",
+			flags:       constants.RequirePassword,
 		}: catelyn.NewSearchSpacesCommand(out, &options),
+		commandConfiguration{
+			name:        "search-pages",
+			description: "Search confluence pages",
+			flags:       constants.RequirePassword,
+		}: catelyn.NewSearchPagesCommand(out, &options),
 	}
 
 	for config, command := range commands {
-		item := cli.Command(config.name, config.description).PreAction(loadPassword)
+		item := cli.Command(config.name, config.description)
+
+		if config.flags&constants.RequirePassword != 0 {
+			item.Action(loadPassword)
+		}
+
 		command.Configure(item)
 		item.Action(command.Exec)
 	}
