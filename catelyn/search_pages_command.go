@@ -3,7 +3,6 @@ package catelyn
 import "io"
 import "fmt"
 import "strings"
-import "net/url"
 import "text/tabwriter"
 import "github.com/alecthomas/kingpin"
 
@@ -23,8 +22,7 @@ type searchPagesCLI struct {
 }
 
 func (c *searchPagesCLI) Exec(context *kingpin.ParseContext) error {
-	uinfo := url.UserPassword(c.globals.ConfluenceUsername, c.globals.ConfluencePassword)
-	client, e := NewConfluenceClient(uinfo, c.globals.ConfluenceHost)
+	client, e := NewConfluenceClient(c.globals.UserInfo(), c.globals.ConfluenceHost)
 
 	if e != nil {
 		return e
