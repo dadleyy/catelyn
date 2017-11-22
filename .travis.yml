@@ -1,0 +1,15 @@
+os: linux
+language: go
+group: stable
+sudo: true
+dist: trusty
+go: 1.9
+stages:
+  - build
+jobs:
+  include:
+  - stage: build
+    go: 1.9
+    script:
+      - make
+      - make test

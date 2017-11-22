@@ -3,14 +3,10 @@ package catelyn
 import "io"
 import "log"
 import "net/url"
-import "github.com/alecthomas/kingpin"
 import "text/tabwriter"
+import "github.com/alecthomas/kingpin"
 
-type Command interface {
-	Exec(*kingpin.ParseContext) error
-	Configure(*kingpin.CmdClause)
-}
-
+// NewSearchSpacesCommand returns an executable kingpin action.
 func NewSearchSpacesCommand(out io.Writer, config *GlobalCLIOptions) Command {
 	logger := log.New(out, "", 0)
 

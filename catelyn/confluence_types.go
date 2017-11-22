@@ -1,5 +1,6 @@
 package catelyn
 
+// ConfluenceSpace represents a space object in confluence.
 type ConfluenceSpace struct {
 	ID   int    `json:"id"`
 	Key  string `json:"key"`
@@ -7,6 +8,7 @@ type ConfluenceSpace struct {
 	Kind string `json:"type"`
 }
 
+// ConfluencePaging represents paging information returned from the confluence rest api.
 type ConfluencePaging struct {
 	Limit uint8 `json:"limit"`
 	Start uint8 `json:"start"`
