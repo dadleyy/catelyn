@@ -2,6 +2,7 @@ package main
 
 import "io"
 import "os"
+import "fmt"
 import "github.com/bgentry/speakeasy"
 import "github.com/alecthomas/kingpin"
 import "github.com/dadleyy/catelyn/catelyn"
@@ -27,7 +28,8 @@ func main() {
 			return nil
 		}
 
-		options.ConfluencePassword, e = speakeasy.Ask(constants.PasswordPrompt)
+		options.ConfluencePassword, e = speakeasy.FAsk(out, constants.PasswordPrompt)
+		fmt.Fprintln(out)
 		return
 	}
 
