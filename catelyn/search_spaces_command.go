@@ -24,14 +24,14 @@ func NewSearchSpacesCommand(out io.Writer, config *GlobalCLIOptions) Command {
 type searchCLI struct {
 	*log.Logger
 	globals *GlobalCLIOptions
-	query   string
 	output  io.Writer
+	search  ConfluenceSpaceSearchInput
 }
 
 func (c *searchCLI) Configure(clause *kingpin.CmdClause) {
-	f := clause.Flag("query", "a search term used to query spaces")
-	f.Short('q')
-	f.StringVar(&c.query)
+	clause.Flag("type", "the type of spaces to search ('personal', 'global')").Short('t').StringVar(&c.search.Type)
+	clause.Flag("limit", "how many results to return").Default("10").Short('l').Uint8Var(&c.search.Limit)
+	clause.Flag("start", "how many results to skip").Short('o').Uint8Var(&c.search.Start)
 }
 
 func (c *searchCLI) Exec(context *kingpin.ParseContext) error {
@@ -42,7 +42,7 @@ func (c *searchCLI) Exec(context *kingpin.ParseContext) error {
 		return e
 	}
 
-	spaces, paging, e := client.SearchSpaces(c.query)
+	spaces, paging, e := client.SearchSpaces(&c.search)
 	writer := tabwriter.NewWriter(c.output, 10, 2, 3, ' ', 0)
 
 	if e != nil {

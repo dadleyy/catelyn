@@ -12,7 +12,7 @@ import "github.com/dadleyy/catelyn/catelyn/constants"
 
 // ConfluenceClient is an interface to the confluence http rest api.
 type ConfluenceClient interface {
-	SearchSpaces(string) ([]ConfluenceSpace, *ConfluencePaging, error)
+	SearchSpaces(*ConfluenceSpaceSearchInput) ([]ConfluenceSpace, *ConfluencePaging, error)
 }
 
 // NewConfluenceClient returns a client implementing the client interface.
@@ -43,8 +43,22 @@ type confluenceClient struct {
 	apiHome     *url.URL
 }
 
-func (c *confluenceClient) SearchSpaces(query string) ([]ConfluenceSpace, *ConfluencePaging, error) {
-	r, e := c.send("GET", fmt.Sprintf("%s/%s", c.apiHome, constants.SpacesAPIEndpoint), nil)
+func (c *confluenceClient) SearchSpaces(i *ConfluenceSpaceSearchInput) ([]ConfluenceSpace, *ConfluencePaging, error) {
+	destination, e := url.Parse(fmt.Sprintf("%s/%s", c.apiHome, constants.SpacesAPIEndpoint))
+
+	if e != nil {
+		return nil, nil, e
+	}
+
+	if i != nil {
+		query := make(url.Values)
+		query.Set("limit", fmt.Sprintf("%d", i.Limit))
+		query.Set("type", i.Type)
+		query.Set("start", fmt.Sprintf("%d", i.Start))
+		destination.RawQuery = query.Encode()
+	}
+
+	r, e := c.send("GET", destination.String(), nil)
 
 	if e != nil {
 		return nil, nil, e

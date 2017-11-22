@@ -18,3 +18,9 @@ type ConfluencePaging struct {
 		Previous string `json:"previous"`
 	} `json:"_links"`
 }
+
+// ConfluenceSpaceSearchInput represents the space search query parameters.
+type ConfluenceSpaceSearchInput struct {
+	ConfluencePaging
+	Type string
+}
