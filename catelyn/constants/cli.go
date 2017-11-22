@@ -4,3 +4,11 @@ const (
 	// PasswordPrompt is displayed before running any command.
 	PasswordPrompt = "Please enter your password to continue: "
 )
+
+const (
+	// RequirePassword lets the main application know that the command will require a user's password to run.
+	RequirePassword = iota + 1
+
+	// AllFlags lets the main application know that all other flags should be honored.
+	AllFlags
+)

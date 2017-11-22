@@ -13,6 +13,7 @@ import "github.com/dadleyy/catelyn/catelyn/constants"
 // ConfluenceClient is an interface to the confluence http rest api.
 type ConfluenceClient interface {
 	SearchSpaces(*ConfluenceSpaceSearchInput) ([]ConfluenceSpace, *ConfluencePaging, error)
+	SearchPages(*ConfluencePageSearchInput) ([]ConfluenceContent, *ConfluencePaging, error)
 }
 
 // NewConfluenceClient returns a client implementing the client interface.
@@ -29,8 +30,8 @@ func NewConfluenceClient(user *url.Userinfo, hostname string) (ConfluenceClient,
 	}
 
 	client := &confluenceClient{
+		Logger:      logger,
 		credentials: user,
-		logger:      logger,
 		apiHome:     api,
 	}
 
@@ -38,9 +39,36 @@ func NewConfluenceClient(user *url.Userinfo, hostname string) (ConfluenceClient,
 }
 
 type confluenceClient struct {
-	logger      *log.Logger
+	*log.Logger
 	credentials *url.Userinfo
 	apiHome     *url.URL
+}
+
+func (c *confluenceClient) SearchPages(i *ConfluencePageSearchInput) ([]ConfluenceContent, *ConfluencePaging, error) {
+	destination, e := url.Parse(fmt.Sprintf("%s/%s", c.apiHome, constants.ContentAPIEndpoint))
+
+	if e != nil {
+		return nil, nil, e
+	}
+
+	if i != nil {
+		query := make(url.Values)
+		query.Set("limit", fmt.Sprintf("%d", i.Limit))
+		query.Set("spaceKey", i.SpaceKey)
+		query.Set("title", i.Title)
+		query.Set("start", fmt.Sprintf("%d", i.Start))
+		destination.RawQuery = query.Encode()
+	}
+
+	response := struct {
+		Results []ConfluenceContent `json:"results"`
+	}{}
+
+	if e := c.get(destination, &response); e != nil {
+		return nil, nil, e
+	}
+
+	return response.Results, nil, nil
 }
 
 func (c *confluenceClient) SearchSpaces(i *ConfluenceSpaceSearchInput) ([]ConfluenceSpace, *ConfluencePaging, error) {
@@ -58,30 +86,30 @@ func (c *confluenceClient) SearchSpaces(i *ConfluenceSpaceSearchInput) ([]Conflu
 		destination.RawQuery = query.Encode()
 	}
 
-	r, e := c.send("GET", destination.String(), nil)
+	response := struct {
+		ConfluencePaging
+		Results []ConfluenceSpace `json:"results"`
+	}{}
+
+	if e := c.get(destination, &response); e != nil {
+		return nil, nil, e
+	}
+
+	return response.Results, &response.ConfluencePaging, nil
+}
+
+func (c *confluenceClient) get(url *url.URL, out interface{}) error {
+	r, e := c.send("GET", fmt.Sprintf("%s", url), nil)
 
 	if e != nil {
-		return nil, nil, e
+		return e
 	}
 
 	defer r.Body.Close()
 
 	decoder := json.NewDecoder(r.Body)
 
-	response := struct {
-		ConfluencePaging
-		Results []ConfluenceSpace `json:"results"`
-	}{}
-
-	if r.StatusCode != 200 {
-		return nil, nil, fmt.Errorf("invalid response from confluence: %d", r.StatusCode)
-	}
-
-	if e := decoder.Decode(&response); e != nil {
-		return nil, nil, e
-	}
-
-	return response.Results, &response.ConfluencePaging, nil
+	return decoder.Decode(out)
 }
 
 func (c *confluenceClient) send(method string, url string, body io.Reader) (*http.Response, error) {
@@ -93,7 +121,14 @@ func (c *confluenceClient) send(method string, url string, body io.Reader) (*htt
 	}
 
 	request.Header.Set("Authorization", c.authorization())
-	return client.Do(request)
+
+	r, e := client.Do(request)
+
+	if r.StatusCode != 200 {
+		return nil, fmt.Errorf("invalid-response")
+	}
+
+	return r, nil
 }
 
 func (c *confluenceClient) authorization() string {
