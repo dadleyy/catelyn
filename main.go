@@ -29,8 +29,8 @@ func main() {
 			return nil
 		}
 
-		options.ConfluencePassword, e = speakeasy.FAsk(out, constants.PasswordPrompt)
-		fmt.Fprintln(out)
+		fmt.Fprintf(out, "%s requires a password to continue\n", context.SelectedCommand.FullCommand())
+		options.ConfluencePassword, e = speakeasy.Ask(constants.PasswordPrompt)
 		return
 	}
 
@@ -45,6 +45,11 @@ func main() {
 			description: "Search confluence pages",
 			flags:       constants.RequirePassword,
 		}: catelyn.NewSearchPagesCommand(out, &options),
+		commandConfiguration{
+			name:        "create-page",
+			description: "Creates a confluence page from a file",
+			flags:       constants.RequirePassword,
+		}: catelyn.NewCreatePageCommand(out, os.Stdin, &options),
 	}
 
 	for config, command := range commands {
