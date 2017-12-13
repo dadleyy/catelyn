@@ -6,3 +6,7 @@ import:
   version: ^2.2.5
 - package: github.com/alecthomas/units
 - package: github.com/alecthomas/template
+- package: github.com/chzyer/readline
+  version: ^1.4.0
+- package: github.com/joho/godotenv
+  version: ^1.2.0
