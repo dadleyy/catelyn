@@ -3,6 +3,7 @@ package main
 import "io"
 import "os"
 import "fmt"
+import "github.com/joho/godotenv"
 import "github.com/bgentry/speakeasy"
 import "github.com/alecthomas/kingpin"
 import "github.com/dadleyy/catelyn/catelyn"
@@ -20,9 +21,16 @@ func main() {
 	options := catelyn.GlobalCLIOptions{}
 
 	cli := kingpin.New("catelyn", "A confluence helper")
-	cli.Flag("username", "your confluence username").Short('u').Required().StringVar(&options.ConfluenceUsername)
-	cli.Flag("hostname", "your confluence hostname").Short('h').Required().StringVar(&options.ConfluenceHost)
-	cli.Flag("password", "your confluence password").Short('p').StringVar(&options.ConfluencePassword)
+	cli.Flag("username", "confluence username").Envar(constants.ConfluenceUsernameEnvironmentVariable).
+		Short('u').Required().StringVar(&options.ConfluenceUsername)
+
+	cli.Flag("hostname", "confluence hostname").Envar(constants.ConfluenceHostnameEnvironmentVariable).
+		Short('h').Required().StringVar(&options.ConfluenceHost)
+
+	cli.Flag("password", "confluence password").Envar(constants.ConfluencePasswordEnvironmentVariable).
+		Short('p').StringVar(&options.ConfluencePassword)
+
+	godotenv.Load()
 
 	loadPassword := func(context *kingpin.ParseContext) (e error) {
 		if options.ConfluencePassword != "" {
